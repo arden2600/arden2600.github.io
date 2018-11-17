@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="xlong">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="xlong">
+    
+    <meta name="keywords" content="arden2600,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="/见自己/见天地/见众生">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>支付系统架构学习笔记(1) · null</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/avator.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">__一山两桥三花四树__</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">支付系统架构学习笔记(1)</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">__一山两桥三花四树__</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://source.unsplash.com/random)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            支付系统架构学习笔记(1)
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="支付">支付</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="架构">架构</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">5.8k</span>阅读时长: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/11/17</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>在不断积累支付名词，业务过程中，除了在局部深入学习之外，对于支付整体也需要有个认识。全局观对于局部业务的认识也有很好的辅助作用。两者相辅相成，在我们学习支付系统过程中不断的相互印证和思考。所以，记录下支付系统架构知识内容。<br><a id="more"></a></p>
+<h4 id="支付系统架构"><a href="#支付系统架构" class="headerlink" title="支付系统架构"></a>支付系统架构</h4><p>本篇支付系统架构详述组成部分如下图：<br><img src="https://i.loli.net/2018/11/17/5bef7b2112f4c.png" alt="image"></p>
+<p>更详细的支付系统参考架构图：（来自<a href="http://doc.cocolian.cn/essay/payment/2016/11/02/account-7-gateway/" target="_blank" rel="noopener">凤凰牌老熊-支付网关设计</a>)<br><img src="http://static.cocolian.cn/img/in-post/gateway-pos.jpg" alt="image"></p>
+<ol>
+<li><strong>架构的定义</strong>：架构通常是基于业务功能来展开的（业务驱动技术？），主要是制定技术规范，框架组成，指导系统落地。好的系统架构师需要不断演变和进化的。（为什么会变，因何而变？变化哪部分？技术升级又或者业务发展需求）</li>
+<li>架构需要关注的基础核心点：安全，稳定，性能，可拓展。</li>
+<li>构建架构时需要关注的点：架构是应用于什么业务场景的，业务流程是怎样的，模型，职责有哪些，如何留下拓展点，系统边界在哪里，多种相同解决方案的技术如何抉择等等。（不同业务场景对系统的需求不同：有些偏重安全，稳定；有些偏重性能，高并发处理，实时性）</li>
+<li><strong>架构与业务需求的关系</strong>：架构的产生来自于业务需求，业务需求进一步抽象形成架构，架构指导后续研发完成业务需求，研发最终成功解决业务需求的问题。整体是一个正向循环的关系。（[业务需要架构初生] –&gt; [架构基础支持研发实现业务] –&gt; [业务发展新需求] –&gt; [架构迭代]…)</li>
+</ol>
+<h5 id="支付架构图"><a href="#支付架构图" class="headerlink" title="支付架构图"></a>支付架构图</h5><p>其实不同的公司对自身技术系统架构设计实现必然是不同的。并且一些小初创资金相对匮乏的公司很有可能没有自己的系统框架。虽然一些具体细节不同，但是多数支付系统公共基础支持模块都是差不多的。在支付业务层面上大同小异（除了一些很大公司的特殊业务外）和对技术选型的不同。（消息中间件，分布式事务解决方案，加解密鉴权方式，日志处理，序列化方式，关系型或者文档型持久化的不同等等）</p>
+<p><img src="https://i.loli.net/2018/11/17/5bef851026a4e.png" alt="image"><br>从参考的支付架构图上，可以从整体上大致知道支付系统由于哪几部分核心组成，业务层分为几层，每层所关注的业务点是什么，如何与外部系统交互的，通过哪些渠道，组件。（<strong>该图仅供参考，对支付业务的不同看法，会构建设计出不同的支付架构图，不要被一些网络上支付架构图所限定</strong>）</p>
+<p>网络上或者视频公共资源的支付业务能够应付面试进入公司，具体支付架构设计都属公司商业机密。在进入公司后才能对整体支付架构核心有一个全局的了解。</p>
+<h5 id="支付流程分析"><a href="#支付流程分析" class="headerlink" title="支付流程分析"></a>支付流程分析</h5><p>下面就举个用户支付的业务场景，大致了解一个支付请求是如何完成，一个支付过程需要哪些必要的参与对象。（以我自己经验来看，下图的用户的支付流程，和商户接入微信支付，用户调用微信支付去商家线上/线下消费的场景很像：<br><img src="https://i.loli.net/2018/11/17/5bef89ac5a53b.png" alt="image"></p>
+<ol>
+<li>用户在线下消费，使用商户客户端（eg:三方支付钱包）扫描付款码,选择微信支付渠道请求支付</li>
+<li>商户客户端发送支付要素（收付款方，订单金额，支付渠道，商品信息，客户端机器码等）到商户服务器端。</li>
+<li>商户服务器端发起支付请求到渠道侧。（把接入微信的商户号，调用微信支付API请求支付）</li>
+<li>渠道返回支付凭证到商户服务端（tokenID，payid等等）</li>
+<li>商户服务端发送支付凭证到商户客户端</li>
+<li>商户客户端调用微信支付控件，用户输入支付密码完成支付</li>
+<li>这一步一般渠道是采用异步通知方法来通知商户。但是有时候，为了提升用户体验，用户支付完成后，商户服务器端在未收到渠道的异步支付通知时候，就同步响应支付成功信息给商户客户端。这样做是不严谨的，不能以提高用户体验而牺牲支付流程的严谨性和安全性。<strong>需要再调用渠道提供的支付交易查询接口，确认该笔交易在渠道的状态，再进行商户端的处理</strong>。（在支付同步及时响应和异步及时通知两者要处理好）</li>
+</ol>
+<p>加入一个四方或者三方支付系统，聚合很多其他银行（国内断直连，需通过网联），支付宝，微信等外部渠道时候，有肯能会遇到的问题：</p>
+<ul>
+<li>接口文档的升级，变更不能及时得到通知</li>
+<li>有些业务没有异步通知</li>
+<li>同一业务在不同渠道处理方式不同</li>
+<li>各种渠道的各自异常错误码体系</li>
+</ul>
+<p>当作为一个第三方或者网联系统平台时候，会有其他商户接入系统，那么需要对外提供接入API（类似支付宝，微信的开放平台），那么对于这些外部接入文档的一些基础要求包括：</p>
+<ul>
+<li>清晰的API，sdk文档说明（入参出参数，返回码定义，异步回调说明，接口版本等)</li>
+<li>接口接入安全性考虑(公钥秘钥如何交换）</li>
+<li>所有外部接入商户的统一标准的异步机制</li>
+<li>保证出口IP稳定安全</li>
+</ul>
+<p>所以，在系统架构设计外部支付渠道，支付网关时候，需要注意一些点：</p>
+<ol>
+<li>提供规范的API，SDK文档；</li>
+<li>保证处理外部请求通讯安全，数据安全性（加签验签，数据非对称加密，数字签名，IP黑白名单等等）；</li>
+<li>接口的稳定性（防止攻击导致外部公共接口瘫痪）；</li>
+<li>异步通知的统一；</li>
+<li>各个渠道的异常转换处理；</li>
+</ol>
+<p>当然，还需要考虑的细节还有很多。随着经验的增加，能力的提高，知识面的拓广会遇到更多问题，更需要这些基础知识点来作为支撑，找到更好的设计方案来解决问题。</p>
+<h5 id="支付核心逻辑"><a href="#支付核心逻辑" class="headerlink" title="支付核心逻辑"></a>支付核心逻辑</h5><p>在此部分，就支付流程中的核心几个部分进行说明。<br><img src="https://i.loli.net/2018/11/17/5befb155a85c3.png" alt="image"><br><img src="https://i.loli.net/2018/11/17/5befb0f03a795.png" alt="image"></p>
+<p>在此，以上图为例子说明：当在客户端应用，点击一笔支付请求时候，请求会到支付系统的支付网关，在网关进行验签操作判断请求是否合法，当验签成功后，会根据请求参数对该请求进行路由，委托到支付路由处理；支付路由根据请求数据选择合适的内部系统转发该请求；当支付请求通过一系列验证规则后，通常在系统内部会这样处理：(最简单的支付处理流程)<br>订单中心下单–&gt;收银台创建支付流水–&gt;请求账务扣款处理–&gt;账务处理成功，返回记账流水–&gt;更新收银台流水状态–&gt;更新订单中心订单状态–&gt;返回处理请求。<br></p>
+<h6 id="支付网关："><a href="#支付网关：" class="headerlink" title="支付网关："></a>支付网关：</h6><p>  在支付系统中，支付网关和支付渠道的对接是最核心的功能。其中支付网关是对外提供服务的接口。所有的需要渠道支持的资金操作都需要通过网关分发到对应的渠道模块上。支付渠道模块是接收网关的请求，调用渠道接口执行真正的资金操作。（<strong>支付网关–&gt;支付渠道</strong>)</p>
+<p>  由于每个渠道接口方式，传输方式都不尽相同，所以支付网关相对于支付渠道的作用，类似设计模式的wrapper，封装各个渠道的差异，对网关呈现统一接口。而网关的功能是为业务提供通用的接口，一些和渠道交互的公共操作，也会放置到网关中。</p>
+<p>  支付网关是直接对接业务系统的接口，它本身并不执行任何支付相关的业务逻辑。<strong>它将支付产品中和业务无关的功能抽取出来</strong>，在这里统一实现。通常包含以下内容：</p>
+<ol>
+<li>唯一的请求入口；</li>
+<li>统一的身份认证，签名，加解密，流量控制；</li>
+<li>API调用计费；</li>
+<li>API的监控，报警分析；   </li>
+<li>熔断；</li>
+<li>API聚合；</li>
+<li>协议转换</li>
+</ol>
+<p>将这些与业务无关的内容抽取出来。与业务处理节藕，模块设计职责功能更明确清晰。</p>
+<p>支付网关，支付产品和支付渠道的职责分工为：</p>
+<ol>
+<li>按照支付能力来划分支付产品</li>
+<li>同一支付能力的公共支付流程，在支付产品中实现。支付产品提供的是和渠道无关的，和支付能力流程相关的功能。</li>
+<li>在各支付产品中，其和支付能力无关的公共功能，在支付网关上实现。</li>
+</ol>
+<p>所以，将上述支付网关包含内容具体总结成以下主要功能：</p>
+<ol>
+<li><strong>API路由</strong>：在聚合支付场景下，当有多个支付产品可以提供支持时，使用支付网关可以让接入方对接时无需考虑支付产品的部署问题。</li>
+<li><strong>接口安全</strong>：熔断，限流和隔离。这对支付服务来说尤为重要。这是微服务架构的基础功能。</li>
+</ol>
+<h6 id="支付逻辑"><a href="#支付逻辑" class="headerlink" title="支付逻辑"></a>支付逻辑</h6><p>  主要是根据请求的参数进行静态校验和业务逻辑校验，完成支付流程。支付逻辑这部分也在“支付产品”内进行业务处理。</p>
+<ol>
+<li>风控拦截：风控是和支付产品相关的，不同的产品的风控措施，处理对策也是不同的，所以风控实在产品层的实现。</li>
+<li>支付路由：路由也是和产品相关，不同的产品路由策略也是不同。</li>
+<li>参数校验：这也是产品相关的，不同的产品和其参数也不同的。</li>
+<li>支付流程：生成交易记录，落地渠道执行支付，同步和异步通知等操作。</li>
+</ol>
+<p>这里说明下支付路由，一般商户是不需要做支付路由的，大部分都是指定了最终的某个支付渠道。<br>但是也有没有指定最终的渠道，可以根据实际情况动态的切换路由，这时候就会涉及到支付路由的配置规则：</p>
+<p>费率：单笔费率，固定费率，总额费率，阶梯费率；<br>营销活动：固定时间单笔优惠，单笔满减，单笔补贴，电子券，折扣券等等；<br>额度限额：单笔额度，时间范围内总额度；<br>服务指标：失败率，平均响应时间，异常率，tps;<br>特殊配置：特殊要求（eg:某渠道能快速结算）</p>
+<h6 id="支付风控"><a href="#支付风控" class="headerlink" title="支付风控"></a>支付风控</h6><p> 支付风控要求梳理清楚支付业务的风险，分析风险原因，制定风险防范规则和控制处理。<br> 当一笔支付请求通过支付网关委托到支付产品做业务处理时候，进行风控校验后，通常会有以下几种<strong>风控结果</strong>：拒绝，通过，增强认证。</p>
+<p> 通常风控业务是一个可以做到很大很好很复杂系统，这中规模的风控系统通常应用于流水量大，投产运营一段时间的系统。也可以做的非常简单版本的风控，就是制定几条风控规则。所以，产品流水大，成熟稳健运行的产品就能依据挺多技术对大量的订单支付流水进行风控分析处理，这就要求系统：<br> 灵活稳定，高性能，准确性等。</p>
+<p> 那么对交易进行风控校验，刚开始的风控模型是如何建立起来的？数据来源有哪些渠道？<br> <strong>数据来源</strong>：   </p>
+<ul>
+<li><p>内部数据：<br><br>  用户/商户信息<br>  交易数据<br>  账户数据<br>  黑名单<br>  设备，位置信息<br>  日志数据 </p>
+</li>
+<li><p>外部数据：<br><br>  第三方购买<br>  央行征信<br>  芝麻信用<br>  合作数据<br>  ….</p>
+</li>
+</ul>
+<p>风控流程通常是如何进行的？有几个阶段，当触发风控后，通常会进行什么操作？实在运营级别还是程序代码级别？<br><strong>风控流程</strong>：</p>
+<ul>
+<li><p>事前：（设计好风控规则）<br>  入网审核<br>  风险评估<br>  单笔限额设置<br>  单日限额设置<br>  频次设计<br>  (日累积，月累计，年累计….)</p>
+</li>
+<li><p>事中：（在交易中累积信息)<br>  实时分析<br>  多维度判断<br>  拒绝<br>  拦截-进入下一步验证-人工介入<br>  延迟操作（例如用户大额提现，需要审核，在业务层上设计合规）</p>
+</li>
+<li><p>事后: <br><br>  数据分析<br>  巡查，警告<br>  降低评级<br>  升级防范措施<br>  逻辑完善<br>  反馈至风控规则</p>
+</li>
+</ul>
+<h6 id="账务系统"><a href="#账务系统" class="headerlink" title="账务系统"></a>账务系统</h6><p>账务是支付系统中核心中核心。没有账务的支付系统是么的灵魂的。<br>账务的基本知识参考：<a href="http://doc.cocolian.cn/essay/account/2016/10/08/account-1/" target="_blank" rel="noopener">凤凰牌老熊-账户模型</a></p>
+<p>主要说明下账务：<br>账户中重要的组成：账户和会计科目。<br><strong>支付账户</strong>：<br>    是指用户在支付系统中用于交易的资金所有者权益的凭证。<br><strong>会计科目</strong>：<br>    是对会计要素对象的具体内容进行分类核算的类目。</p>
+<p>不同的业务场景，通常都设计对应不同的会计科目，用来保存这一次支付交易的账务信息。换句话说，从设计的会计分录就能大概知道某个业务场景的账是怎么记的，业务流程是如何的。</p>
+<p>账务的很重要一点体现在：系统平台每一日在日切到下一日之前，账务系统都要对该系统当天的交易数据进行日终核算跑批处理，总账核对等处理，并给出一系列表报。<br><img src="https://i.loli.net/2018/11/17/5befe36376112.png" alt="image"></p>
+<p>跟账务系统息息相关的还有两大核心部分：清结算与对账。<br>三者是密切相关的，但是通常都是以账务为核心。账务系统与交易中心数据进行内部对账，之后清算中心就可以与交易中心中订单数据进行对账，就可以在结算中心生成结算单，做结算处理。</p>
+<p>简单讨论下内部对账：<br><strong>内部对账</strong>：故名思义，就是系统内部之间的对账。每个支付系统对内部对账的定义和实现不尽相同，但是通常都是要与账务流水进行对账的。</p>
+<p>为什么要进行内部对账？<br>主要目的是保证账务和交易信息匹配。若是有差错，那么要找到问题并解决，才能进行后续清结算过程。</p>
+<p>通常，支付系统中的一条交易信息会有多条账务信息。因为每一次支付交易，若是支付流程过长，那么交易中心会与账务中心有多次的交互。每次与账务交互都会产生账务流水。（订单：1 &lt;====&gt; n：账务流水）</p>
+<p>对账通常包括：<strong>内部对账+外部对账</strong>。<br>一般来说，对账流程涉及到如下步骤：渠道对账单下载，本地交易记录准备，轧差，平账。</p>
+<ul>
+<li>账务和标准账单对账；</li>
+<li>双向对账；</li>
+<li>差错处理（长款，短款）</li>
+</ul>
+<p>外部对账的前提是，内部对账已经对平。不然内部账都没对平，去和外部渠道对账是不符合规范的。<br>外部对账就是把内部交易数据与外部渠道的渠道流水进行一一勾兑。(外部对账架构参考：<a href="http://doc.cocolian.cn/essay/recon/2016/10/10/account-2-reconciliation/" target="_blank" rel="noopener">凤凰牌老熊-对账处理</a>)<br><img src="http://static.cocolian.cn/img/in-post/checking-arch.jpg" alt="image"></p>
+<p>外部对账通常需要下载外部渠道提供的对账文件，对账单内会包含系统与外部渠道交互的交易明细。<br>外部渠道<strong>对账单下载</strong>：</p>
+<ul>
+<li>下载方式：http(s)和ftp(s)</li>
+<li>文件格式：csv,txt,zip等</li>
+<li>下载时间：不同渠道提供对账单时间不同的</li>
+<li>异常处理：立即重试，递增时间重试</li>
+</ul>
+<p><strong>双向对账</strong>：<br>以支付系统账务流水为主进行对账；在方向以外部渠道流水为主进行对账。<br><img src="https://i.loli.net/2018/11/17/5befebcf053f8.png" alt="image"></p>
+<p>无论是内部对账还是外部对账，若是出现差异账，则那些记录将会被视作存疑记录，也就是差错明细了。需要进行差错处理：</p>
+<ul>
+<li>本地丢失：我方无，对方有。渠道账单的数据未在账务中查找到。（具体的长短款需要依据业务场景分析）</li>
+<li>渠道丢失：我方有，对方无。账务中的数据未在渠道账单中查找到。</li>
+<li>数据差错：账务与渠道某些对账字段未能对上。</li>
+</ul>
+<p>外部对账差错需要注意的是：<br>    针对差错都需要向渠道查询每笔订单信息在此确认；同时，有些渠道的交易成功时间本来就是有误的。一般来说不会出现很大的差错，通常会出现的就是跨日交易。（在日切窗口期还有交易处理中，例如：当天交易无账单，先标记存疑差错，第二天再更正）</p>
+<h5 id="支付基础服务"><a href="#支付基础服务" class="headerlink" title="支付基础服务"></a>支付基础服务</h5><p>一个支付系统，通常会有不少的基础服务支撑。例如：公共推送服务（交易信息，系统信息等等),分布式事务支持，消息中间件支持，链路监控等等。</p>
+<ul>
+<li><p>公共推送服务<br>基础支付系统交易服务，风控预警等各种业务的各种自定义消息模版的消息进行推送。既可以是主动调用服务推送信息，也可以被动触发推送预警等消息。<br><img src="https://i.loli.net/2018/11/17/5beff7f699be1.png" alt="image"></p>
+</li>
+<li><p>MQ消息中间件<br>消息中间件可靠性消息服务的支持，经常应用与支付系统的交易各个业务流程。利用MQ消息中间件的集群消费，通常是异步来处理业务类型。非常重要的一点：<strong>要保证消费者的幂等性处理</strong>。<br><br><strong>异步延时调用应用场景</strong>：<br></p>
+<ul>
+<li>订单创建成功的时候会向调用方服务推送主动查询信息，如果订单支付成功会通知服务取消后续的主动查询。（若是一直收不到回调消息通知）则在过期时间点向渠道主动查询订单是否支付，目的是避免渠道异步回调通知服务的异常。</li>
+<li>通常支付系统在外接支付宝或者微信渠道的时候，不仅仅可以利用支付宝或者微信的异步回调通知交易结果，还能主动通过定时器调用外部渠道的交易查询接口。当查询到<strong>交易终态</strong>的时候，在利用消息中间件传递交易结果，方向支付流程的通知，完成每个支付流程流水的状态。</li>
+<li>退款创建成功的时候会向服务推送主动查询信息，该服务会在一定的时间范围内多次查询渠道直到有明确的结果返回。（虽然有些渠道是没有异同回调通知的，则需要主动查询）</li>
+</ul>
+<p><strong>补偿机制：</strong>：<br><br>  补偿机制也是消息中间件的一大特性。补偿机制有以下特点：</p>
+<ul>
+<li>协调保证各个模块间的数据一致性<br>  假设线上收单场景：用户通过微信在线下商户消费，支付系统在收单模块下一笔单，收单调用收银台处理，这是收银台异步返回处理中状态。之后会同步调用外部渠道调用微信渠道支付接口。假设微信渠道侧一直没有结果返回。这时候，用户微信端扣款了，系统平台商户端该笔支付订单还是支付中。过了几分钟后，支付系统主动调用交易查询得到交易终态信息。然后收银台通过mq消息补偿机制通知收单模块，收单模块更新状态，推动消息给线下商户的客户端，完成该笔支付。</li>
+<li>一般会跟重试，回滚来协调使用；</li>
+<li>使用条件：系统异常，业务异常；</li>
+<li>补偿失败报警人工干预；（还能通过控制台人工发送消息完成交易）</li>
+</ul>
+</li>
+<li><p>链路监控<br>支付系统须要能在后台日志，查询到该这笔支付流水整个调用流程。从支付网关到内部业务处理链路过程都能监控和查询到。当然了，这少不了一些现有优秀的框架支持。<br><img src="https://i.loli.net/2018/11/17/5beffeadaa54a.png" alt="image"></p>
+<p>展示信息：应用模块信息，请求URL，调用起始源，调用方，调用次数，本地平均耗时，总平均耗时，调用失败平均耗时，错误率，依赖度等。（关注：Cache,SQL,HTTP,TCP)</p>
+</li>
+</ul>
+<h5 id="支付安全"><a href="#支付安全" class="headerlink" title="支付安全"></a>支付安全</h5><p>支付系统最大的考虑因素之一就是；安全性。也就是在系统开发设计阶段就要对风险进行防微杜渐。对留后门的支付系统更是严令禁止。支付系统充满各种风险：系统风险，运维风险，平台风险等。</p>
+<ul>
+<li><p>数据安全<br>防窃听，防越权防抵赖，防破坏，防篡改，防重放，防泄漏等等。<br><br><strong>使用范围</strong>：网络，系统，应用，业务。 </p>
+</li>
+<li><p>数据安全要点<br>加密通讯（防窃听）<br>双向签名（防抵赖，防篡改）<br>敏感数据加密存储（系统注册平台用户信息，证件信息，防泄漏）<br>秘钥管理（通过认证接口获取，将秘钥加密保存在数据库，不允许直接写入配置文件）<br>权限控制（越权访问-非法访问）<br>数据的完整性（防篡改-数据被恶意修改）</p>
+</li>
+<li><p>其他<br>内部接口认证<br>避免内部代码未经过审核投产<br>数据异常分析<br>安全机构合作</p>
+</li>
+</ul>
+<p>注意点：<br>使用https加密传输；<br>传输的数据使用签名；<br>支付成功以服务端异步通知为准；</p>
+<p>参考：<br><a href="http://doc.cocolian.cn/" target="_blank" rel="noopener">凤凰牌老熊-在这里读懂支付</a><br>支付学院</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="http://yoursite.com">xlong</a>
+            </p><p>原文链接：<a href="http://yoursite.com/2018/11/17/支付系统架构学习笔记1/">http://yoursite.com/2018/11/17/支付系统架构学习笔记1/</a>
+            </p><p>发表日期：<a href="http://yoursite.com/2018/11/17/支付系统架构学习笔记1/">November 17th 2018, 10:04:33 am</a>
+            </p><p>更新日期：<a href="http://yoursite.com/2018/11/17/支付系统架构学习笔记1/">November 17th 2018, 8:20:12 pm</a>
+            </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/11/11/ftp-ftps-sftp学习总结/" title="ftp,ftps,sftp学习总结">
+                    <div class="prevTitle">ftp,ftps,sftp学习总结</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:xiansky@outlook.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/arden2600" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/wc_qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#支付系统架构"><span class="toc-number">1.</span> <span class="toc-text">支付系统架构</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#支付架构图"><span class="toc-number">1.1.</span> <span class="toc-text">支付架构图</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#支付流程分析"><span class="toc-number">1.2.</span> <span class="toc-text">支付流程分析</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#支付核心逻辑"><span class="toc-number">1.3.</span> <span class="toc-text">支付核心逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#支付网关："><span class="toc-number">1.3.1.</span> <span class="toc-text">支付网关：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#支付逻辑"><span class="toc-number">1.3.2.</span> <span class="toc-text">支付逻辑</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#支付风控"><span class="toc-number">1.3.3.</span> <span class="toc-text">支付风控</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#账务系统"><span class="toc-number">1.3.4.</span> <span class="toc-text">账务系统</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#支付基础服务"><span class="toc-number">1.4.</span> <span class="toc-text">支付基础服务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#支付安全"><span class="toc-number">1.5.</span> <span class="toc-text">支付安全</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 4
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/17</span><a class="archive-post-title" href="/2018/11/17/支付系统架构学习笔记1/">支付系统架构学习笔记(1)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/11</span><a class="archive-post-title" href="/2018/11/11/ftp-ftps-sftp学习总结/">ftp,ftps,sftp学习总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/31</span><a class="archive-post-title" href="/2018/10/31/支付体系基础知识点/">支付体系基础知识点</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/hello-world/">Hello World</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="支付"><span class="iconfont-archer">&#xe606;</span>支付</span>
+    
+        <span class="sidebar-tag-name" data-tags="基础"><span class="iconfont-archer">&#xe606;</span>基础</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="文件服务器"><span class="iconfont-archer">&#xe606;</span>文件服务器</span>
+    
+        <span class="sidebar-tag-name" data-tags="ftp"><span class="iconfont-archer">&#xe606;</span>ftp</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "xlong"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
